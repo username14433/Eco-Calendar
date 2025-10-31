@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ru">
+<head>
+    <meta charset="utf-8">
+    <title>Eco Calendar</title>
+    <link rel="stylesheet" href="/resources/css/main-page.css">
+</head>
+<body>
+<meta charset="utf-8">
+<div class="container">
+    <h1>Eco Calendar 🌿</h1>
+    <section class="events-section">
+        <h2>Предстоящие события</h2>
+        <h3>Предстоящих событий: <span th:text="${upcomingEventsQuantity}">0</span></h3>
+        <h3>Завершённых событий: <span th:text="${finishedEventsQuantity}">0</span></h3>
+        <table>
+            <thead>
+            <tr>
+                <th>Название</th>
+                <th>Описание</th>
+                <th>Начало</th>
+                <th>Конец</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:if="${not #lists.isEmpty(events)}" th:each="event: ${events}">
+                <td th:text="${event.summary}"></td>
+                <th th:text="${event.description}"></th>
+                <td th:text="${event.startTime != null ? event.startTime : 'Весь день'}"></td>
+                <td th:text="${event.endTime != null ? event.endTime : 'Весь день'}"></td>
+                <td>
+                    <form action="/delete-event" method="POST" class="record__controls-form">
+                        <input type="hidden" name="id" th:value='${event.id}'>
+                        <button type="submit" class="button_type_close">
+                            <svg width="24" height="24" viewBox="0 0 24 24">
+                                <path d="M12.071 13.485l-2.828 2.829-1.415-1.415 2.829-2.828-2.829-2.828 1.415-1.415 2.828 2.829L14.9 7.828l.707.708.707.707-2.829 2.828 2.829 2.829-1.415 1.414-2.828-2.829z" fill="#000"></path>
+                            </svg>
+                        </button>
+                    </form>
+                </td>
+
+            </tr>
+            </tbody>
+        </table>
+        <h2 class="no-events-text" th:unless="${not #lists.isEmpty(events)}">Событий пока не запланировано</h2>
+    </section>
+
+    <section class="form-section">
+        <h2>Добавить новое событие</h2>
+        <form action="/add" method="POST">
+            <label>Название:
+                <input type="text" name="summary" required>
+            </label>
+
+            <label>Описание:
+                <textarea name="description"></textarea>
+            </label>
+
+            <label>Дата и время начала:
+                <input type="datetime-local" name="startDateTime" required>
+            </label>
+
+            <label>Дата и время конца:
+                <input type="datetime-local" name="endDateTime" required>
+            </label>
+
+            <button type="submit">Создать событие</button>
+        </form>
+        <div class="bottom-button">
+            <form action="/calendar" method="Get">
+                <button type="submit" class="admin-btn">Календарь</button>
+            </form>
+        </div>
+    </section>
+</div>
+</body>
+</html>

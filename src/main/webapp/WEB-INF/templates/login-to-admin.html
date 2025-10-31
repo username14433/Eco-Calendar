@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ru">
+<head>
+    <meta charset="utf-8">
+    <title>Eco Calendar</title>
+    <link rel="stylesheet" href="/resources/css/main-page.css">
+</head>
+<body>
+<meta charset="utf-8">
+<div class="container">
+    <h1>Eco Calendar 🌿</h1>
+    <section class="form-section">
+        <h2>Войти как Админ</h2>
+        <form action="/admin-panel" method="POST">
+            <label>Введите идентификатор админа:
+                <input name="loginId" required>
+            </label>
+            <button type="submit">Войти</button>
+        </form>
+
+        <p th:if="${error != null}" th:text="${error}" class="error-msg"></p>
+
+        <div class="bottom-button">
+            <form action="/calendar" method="GET">
+                <button type="submit" class="admin-btn">← Вернуться к календарю</button>
+            </form>
+        </div>
+
+    </section>
+</div>
+</body>
+</html>

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ru">
+<head>
+    <meta charset="utf-8">
+    <title>Eco Calendar</title>
+    <link rel="stylesheet" href="/resources/css/main-page.css">
+</head>
+<body>
+<meta charset="utf-8">
+<div class="container">
+    <h1>Eco Calendar 🌿</h1>
+
+    <section class="events-section">
+        <h2>Предстоящие события</h2>
+        <h3>Предстоящих событий: <span th:text="${upcomingEventsQuantity}">0</span></h3>
+        <h3>Завершённых событий: <span th:text="${finishedEventsQuantity}">0</span></h3>
+        <table>
+            <thead>
+            <tr>
+                <th>Название</th>
+                <th>Описание</th>
+                <th>Начало</th>
+                <th>Конец</th>
+            </tr>
+            </thead>
+            <tbody>
+                <tr th:each="event: ${events}">
+                    <td th:text="${event.summary}"></td>
+                    <th th:text="${event.description}"></th>
+                    <td th:text="${event.startTime != null ? event.startTime : 'Весь день'}"></td>
+                    <td th:text="${event.endTime != null ? event.endTime : 'Весь день'}"></td>
+                </tr>
+
+            </tbody>
+        </table>
+        <div class="bottom-button">
+            <form action="/login-to-admin" method="GET">
+                <button type="submit" class="admin-btn">Админ-панель</button>
+            </form>
+        </div>
+
+    </section>
+
+</div>
+</body>
+</html>
