@@ -98,7 +98,7 @@ public class CommonController {
     }
 
     @PostMapping("/delete-event")
-    public String deleteEvent(@RequestParam("id") long eventId) {
+    public String deleteEvent(@RequestParam("id") int eventId) {
         eventService.deleteEvent(eventId);
 
         return "redirect:/admin-panel";

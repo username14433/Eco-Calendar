@@ -1,15 +1,32 @@
 package org.rockend.eco_calendar_web_application_demo.entity;
 
-import java.time.LocalDateTime;
 
+import jakarta.persistence.*;
+
+@Entity
+@Table(name = "events")
 public class Event {
-    private final String summary;
-    private final String description;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int id;
+
+    @Column(name = "summary",  nullable = false, length = 150)
+    private String summary;
+
+    @Column(name = "description",  nullable = false, length = 300)
+    private String description;
+
+    @Column(name = "start_time",  nullable = false, length = 20)
     private String startTime;
+
+    @Column(name = "end_time",  nullable = false, length = 20)
     private String endTime;
-    private final EventStatus status;
-    private final long id;
-    private static int counterSequence = 1;
+
+    @Column(name = "status",  nullable = false)
+    private EventStatus status;
+
+
+    public Event() { }
 
     public Event(String summary, String description, String startTime, String endTime, EventStatus status) {
         this.summary = summary;
@@ -17,14 +34,12 @@ public class Event {
         this.startTime = startTime;
         this.endTime = endTime;
         this.status = status;
-        this.id = counterSequence++;
     }
 
     public Event(String summary, String description, EventStatus status) {
         this.summary = summary;
         this.description = description;
         this.status = status;
-        this.id = counterSequence++;
     }
 
     public String getSummary() {

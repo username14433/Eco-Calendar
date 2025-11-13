@@ -6,7 +6,6 @@ import org.rockend.eco_calendar_web_application_demo.entity.EventStatus;
 import org.rockend.eco_calendar_web_application_demo.entity.dto.EventDto;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -43,7 +42,7 @@ public class EventService {
         eventDao.saveEvent(new Event(summary, description, start, end, status));
     }
 
-    public void deleteEvent(long id) {
+    public void deleteEvent(int id) {
         eventDao.removeEvent(id);
     }
 }
