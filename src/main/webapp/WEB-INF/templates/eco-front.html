@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Eco Calendar – Календарь</title>
+    <link rel="stylesheet" href="/resources/css/main-page.css">
+</head>
+<body>
+<div class="container">
+    <h1>Eco Calendar 🌿</h1>
+
+    <section class="stats-section">
+        <div class="stat-card">
+            <span class="stat-label">Предстоящих событий</span>
+            <span class="stat-value" id="upcoming-count">0</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-label">Завершённых событий</span>
+            <span class="stat-value" id="finished-count">0</span>
+        </div>
+    </section>
+
+    <!-- Календарь -->
+    <section class="calendar-section">
+        <div class="calendar-header">
+            <button class="calendar-nav-btn" id="prev-month">‹</button>
+            <div class="calendar-title" id="calendar-month-year">Месяц Год</div>
+            <button class="calendar-nav-btn" id="next-month">›</button>
+        </div>
+
+        <div class="calendar-weekdays">
+            <div class="calendar-weekday">Пн</div>
+            <div class="calendar-weekday">Вт</div>
+            <div class="calendar-weekday">Ср</div>
+            <div class="calendar-weekday">Чт</div>
+            <div class="calendar-weekday">Пт</div>
+            <div class="calendar-weekday">Сб</div>
+            <div class="calendar-weekday">Вс</div>
+        </div>
+
+        <div class="calendar-days" id="calendar-days">
+            <!-- сюда JS вставит дни -->
+        </div>
+    </section>
+
+    <!-- Форма добавления события -->
+    <section class="form-section">
+        <h2>Добавить событие</h2>
+        <form id="add-event-form">
+            <label>
+                Название:
+                <input type="text" name="summary" required>
+            </label>
+            <label>
+                Описание:
+                <textarea name="description" required></textarea>
+            </label>
+            <label>
+                Начало (YYYY-MM-DDTHH:MM):
+                <input type="text" name="startTime" placeholder="2025-11-30T10:00">
+            </label>
+            <label>
+                Конец (YYYY-MM-DDTHH:MM):
+                <input type="text" name="endTime" placeholder="2025-11-30T12:00">
+            </label>
+            <label>
+                Статус:
+                <select name="status">
+                    <option value="UPCOMING">Предстоящее</option>
+                    <option value="FINISHED">Завершённое</option>
+                </select>
+            </label>
+            <button type="submit" class="admin-btn">Добавить</button>
+        </form>
+    </section>
+</div>
+
+<script src="/resources/js/eco-front.js"></script>
+</body>
+</html>

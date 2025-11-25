@@ -103,4 +103,10 @@ public class CommonController {
 
         return "redirect:/admin-panel";
     }
+
+    @GetMapping("/eco-front")
+    public String getEcoFront() {
+        return "eco-front"; // имя шаблона eco-front.html
+    }
+
 }
