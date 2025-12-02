@@ -3,6 +3,12 @@ const API_BASE = '/api/events';
 let currentYear;
 let currentMonth; // 0-11
 
+const monthNames = [
+    'Январь', 'Февраль', 'Март', 'Апрель',
+    'Май', 'Июнь', 'Июль', 'Август',
+    'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'
+];
+
 // ================== API ==================
 
 async function fetchEvents() {
@@ -10,7 +16,7 @@ async function fetchEvents() {
     if (!response.ok) {
         throw new Error('Не удалось загрузить события');
     }
-    return response.json(); // EventDto: { events, upcomingEventsQuantity, finishedEventsQuantity }
+    return response.json(); // { events, upcomingEventsQuantity, finishedEventsQuantity }
 }
 
 async function createEvent(eventData) {
@@ -23,7 +29,8 @@ async function createEvent(eventData) {
     });
 
     if (!response.ok) {
-        throw new Error('Не удалось создать событие');
+        const text = await response.text();
+        throw new Error('Не удалось создать событие: ' + text);
     }
 }
 
@@ -33,191 +40,300 @@ async function deleteEvent(id) {
     });
 
     if (!response.ok) {
-        throw new Error('Не удалось удалить событие');
+        const text = await response.text();
+        throw new Error('Не удалось удалить событие: ' + text);
     }
 }
 
-// ================== КАЛЕНДАРЬ ==================
+// ================== ДАТЫ/ГРУППИРОВКА ==================
 
-const monthNames = [
-    'Январь', 'Февраль', 'Март', 'Апрель',
-    'Май', 'Июнь', 'Июль', 'Август',
-    'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'
-];
-
-// Парсим дату события из строки startTime (формат типа "2025-11-30T10:00")
-function getEventDate(event) {
-    if (!event.startTime) {
-        return null;
-    }
-
-    // Берём только часть YYYY-MM-DD
-    const datePart = event.startTime.substring(0, 10);
+function parseDateOnly(dateTimeStr) {
+    if (!dateTimeStr) return null;
+    const datePart = dateTimeStr.substring(0, 10);
     const date = new Date(datePart + 'T00:00:00');
-
-    if (isNaN(date.getTime())) {
-        return null;
-    }
-
-    return date;
+    return isNaN(date.getTime()) ? null : date;
 }
 
-// Группируем события по дате "YYYY-MM-DD"
+function formatTime(dateTimeStr) {
+    if (!dateTimeStr || dateTimeStr.length < 16) return '';
+    return dateTimeStr.substring(11, 16); // "HH:MM"
+}
+
+function formatDateHuman(date) {
+    const dd = String(date.getDate()).padStart(2, '0');
+    const mm = String(date.getMonth() + 1).padStart(2, '0');
+    const yyyy = date.getFullYear();
+    return `${dd}.${mm}.${yyyy}`;
+}
+
 function groupEventsByDay(events) {
     const map = {};
-
     events.forEach(event => {
-        const date = getEventDate(event);
-        if (!date) {
-            return;
-        }
-
-        const year = date.getFullYear();
-        const month = date.getMonth();
-
-        // фильтруем по текущему месяцу
-        if (year !== currentYear || month !== currentMonth) {
-            return;
-        }
-
-        const key = date.toISOString().substring(0, 10); // "YYYY-MM-DD"
-
+        const date = parseDateOnly(event.startTime);
+        if (!date) return;
+        const key = date.toISOString().substring(0, 10);
         if (!map[key]) {
             map[key] = [];
         }
         map[key].push(event);
     });
-
     return map;
 }
 
-// Рисуем календарь
-function renderCalendar(events) {
+// ================== РЕНДЕР КАЛЕНДАРЯ ==================
+
+function renderCalendar(events, onDayClick) {
     const monthYearLabel = document.getElementById('calendar-month-year');
     const calendarDaysContainer = document.getElementById('calendar-days');
 
     monthYearLabel.textContent = `${monthNames[currentMonth]} ${currentYear}`;
-
-    // Очищаем
     calendarDaysContainer.innerHTML = '';
 
     const firstDayOfMonth = new Date(currentYear, currentMonth, 1);
     const lastDayOfMonth = new Date(currentYear, currentMonth + 1, 0);
     const daysInMonth = lastDayOfMonth.getDate();
 
-    // В JS неделя с воскресенья (0), нам нужна с понедельника
-    let startWeekDay = firstDayOfMonth.getDay(); // 0 (Вс) - 6 (Сб)
-    if (startWeekDay === 0) {
-        startWeekDay = 7;
-    }
+    let startWeekDay = firstDayOfMonth.getDay();
+    if (startWeekDay === 0) startWeekDay = 7;
 
     const eventsByDay = groupEventsByDay(events);
 
-    // Пустые ячейки до первого дня месяца (если месяц не начинается с понедельника)
+    const today = new Date();
+    const todayY = today.getFullYear();
+    const todayM = today.getMonth();
+    const todayD = today.getDate();
+
     for (let i = 1; i < startWeekDay; i++) {
         const emptyCell = document.createElement('div');
         emptyCell.classList.add('calendar-day', 'calendar-day--empty');
         calendarDaysContainer.appendChild(emptyCell);
     }
 
-    // Ячейки дней месяца
     for (let day = 1; day <= daysInMonth; day++) {
+        const date = new Date(currentYear, currentMonth, day);
+        const dateKey = date.toISOString().substring(0, 10);
+        const dayEvents = (eventsByDay[dateKey] || []).filter(e => {
+            const d = parseDateOnly(e.startTime);
+            return d && d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+        });
+
         const cell = document.createElement('div');
         cell.classList.add('calendar-day');
 
-        const date = new Date(currentYear, currentMonth, day);
-        const dateKey = date.toISOString().substring(0, 10); // "YYYY-MM-DD"
+        if (currentYear === todayY && currentMonth === todayM && day === todayD) {
+            cell.classList.add('calendar-day--today');
+        }
+        if (dayEvents.length > 0) {
+            cell.classList.add('calendar-day--has-events');
+        }
 
         const dayNumber = document.createElement('div');
         dayNumber.classList.add('calendar-day-number');
         dayNumber.textContent = day;
         cell.appendChild(dayNumber);
 
-        // События этого дня
-        const dayEvents = eventsByDay[dateKey] || [];
         const eventsContainer = document.createElement('div');
         eventsContainer.classList.add('calendar-events');
 
         dayEvents.forEach(event => {
             const eventEl = document.createElement('div');
             eventEl.classList.add('calendar-event');
-
-            const timeText = (event.startTime && event.startTime.length >= 16)
-                ? event.startTime.substring(11, 16) // "HH:MM"
-                : '';
-
-            const header = document.createElement('div');
-            header.classList.add('calendar-event-header');
-            header.textContent = timeText ? `${timeText} · ${event.summary}` : event.summary;
-
-            const deleteBtn = document.createElement('button');
-            deleteBtn.textContent = '×';
-            deleteBtn.classList.add('calendar-event-delete');
-            deleteBtn.addEventListener('click', async (e) => {
-                e.stopPropagation();
-                if (confirm('Удалить это событие?')) {
-                    try {
-                        await deleteEvent(event.id);
-                        await loadAndRender();
-                    } catch (err) {
-                        alert(err.message);
-                    }
-                }
-            });
-
-            const headerWrapper = document.createElement('div');
-            headerWrapper.classList.add('calendar-event-header-row');
-            headerWrapper.appendChild(header);
-            headerWrapper.appendChild(deleteBtn);
-
-            eventEl.appendChild(headerWrapper);
-
+            const timeText = formatTime(event.startTime);
+            eventEl.textContent = timeText ? `${timeText} · ${event.summary}` : event.summary;
             eventsContainer.appendChild(eventEl);
         });
 
         cell.appendChild(eventsContainer);
+
+        cell.addEventListener('click', () => {
+            onDayClick(new Date(date), dayEvents);
+        });
+
         calendarDaysContainer.appendChild(cell);
     }
 }
 
-// ================== СТАТИСТИКА + ФОРМА ==================
+// ================== ДЕТАЛИ ДНЯ И БЛИЖАЙШИЕ ==================
 
-function renderStats(dto) {
-    const upcomingSpan = document.getElementById('upcoming-count');
-    const finishedSpan = document.getElementById('finished-count');
+function renderDayDetails(date, eventsForDay) {
+    const titleEl = document.getElementById('day-details-title');
+    const contentEl = document.getElementById('day-details-content');
 
-    upcomingSpan.textContent = dto.upcomingEventsQuantity;
-    finishedSpan.textContent = dto.finishedEventsQuantity;
+    if (!date) {
+        titleEl.textContent = 'Выберите день';
+        contentEl.className = 'day-details-empty';
+        contentEl.textContent = 'Пока ничего не выбрано';
+        return;
+    }
+
+    titleEl.textContent = `События на ${formatDateHuman(date)}`;
+
+    contentEl.innerHTML = '';
+    contentEl.className = 'day-details-content';
+
+    if (!eventsForDay || eventsForDay.length === 0) {
+        contentEl.textContent = 'На этот день нет событий';
+        return;
+    }
+
+    eventsForDay.forEach(event => {
+        const item = document.createElement('div');
+        item.classList.add('day-details-item');
+
+        const header = document.createElement('div');
+        header.classList.add('day-details-item-header');
+
+        const title = document.createElement('div');
+        title.classList.add('day-details-item-title');
+        const timeFrom = formatTime(event.startTime);
+        const timeTo = formatTime(event.endTime);
+        const timeSpan = timeFrom && timeTo ? `${timeFrom}–${timeTo}` :
+            timeFrom ? timeFrom : '';
+
+        title.textContent = timeSpan ? `${timeSpan} · ${event.summary}` : event.summary;
+
+        const status = document.createElement('div');
+        status.classList.add('day-details-item-status');
+        status.textContent = event.status === 'FINISHED' ? 'Завершено' : 'Предстоит';
+
+        header.appendChild(title);
+        header.appendChild(status);
+
+        const desc = document.createElement('div');
+        desc.classList.add('day-details-item-desc');
+        desc.textContent = event.description;
+
+        item.appendChild(header);
+        item.appendChild(desc);
+
+        // КНОПКА УДАЛЕНИЯ — ТОЛЬКО ДЛЯ АДМИНА
+        if (window.IS_ADMIN) {
+            const deleteBtn = document.createElement('button');
+            deleteBtn.textContent = 'Удалить';
+            deleteBtn.classList.add('admin-btn', 'day-details-delete-btn');
+            deleteBtn.addEventListener('click', async () => {
+                if (confirm('Удалить это событие?')) {
+                    try {
+                        await deleteEvent(event.id);
+                        await loadAndRender(date);
+                    } catch (e) {
+                        alert(e.message);
+                    }
+                }
+            });
+            item.appendChild(deleteBtn);
+        }
+
+        contentEl.appendChild(item);
+    });
 }
 
-async function loadAndRender() {
+function renderUpcomingList(events) {
+    const listEl = document.getElementById('upcoming-list');
+    listEl.innerHTML = '';
+
+    const upcoming = events
+        .filter(e => e.status === 'AWAITING' && e.startTime)
+        .sort((a, b) => new Date(a.startTime) - new Date(b.startTime))
+        .slice(0, 5);
+
+    if (upcoming.length === 0) {
+        const li = document.createElement('li');
+        li.textContent = 'Нет ближайших событий';
+        listEl.appendChild(li);
+        return;
+    }
+
+    upcoming.forEach(event => {
+        const li = document.createElement('li');
+        const date = parseDateOnly(event.startTime);
+        const dateText = date ? formatDateHuman(date) : '';
+        const timeText = formatTime(event.startTime);
+        li.textContent = `${dateText} ${timeText ? timeText + ' ' : ''}— ${event.summary}`;
+        listEl.appendChild(li);
+    });
+}
+
+// ================== СТАТИСТИКА, ФОРМА, НАВИГАЦИЯ ==================
+
+function renderStats(dto) {
+    document.getElementById('upcoming-count').textContent = dto.upcomingEventsQuantity;
+    document.getElementById('finished-count').textContent = dto.finishedEventsQuantity;
+}
+
+async function loadAndRender(selectedDateForDetails = null) {
     try {
         const dto = await fetchEvents();
         renderStats(dto);
-        renderCalendar(dto.events);
+
+        renderCalendar(dto.events, (date, eventsForDay) => {
+            renderDayDetails(date, eventsForDay);
+        });
+
+        renderUpcomingList(dto.events);
+
+        if (selectedDateForDetails) {
+            const keyDate = new Date(selectedDateForDetails.getTime());
+            const eventsByDay = groupEventsByDay(dto.events);
+            const key = keyDate.toISOString().substring(0, 10);
+            const eventsForDay = eventsByDay[key] || [];
+            renderDayDetails(keyDate, eventsForDay);
+        } else {
+            renderDayDetails(null, []);
+        }
     } catch (e) {
         alert(e.message);
     }
 }
 
 function setupForm() {
+    // если не админ — форму вообще не настраиваем
+    if (!window.IS_ADMIN) {
+        return;
+    }
+
     const form = document.getElementById('add-event-form');
+    if (!form) return;
+
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
 
         const formData = new FormData(form);
-        const eventData = {
-            summary: formData.get('summary'),
-            description: formData.get('description'),
-            startTime: formData.get('startTime') || null,
-            endTime: formData.get('endTime') || null,
-            status: formData.get('status')
-        };
+        const summary = formData.get('summary').trim();
+        const description = formData.get('description').trim();
+        const startTime = formData.get('startTime');
+        const endTime = formData.get('endTime');
+        const status = formData.get('status');
+
+        if (!summary || !description) {
+            alert('Заполните название и описание.');
+            return;
+        }
+
+        if (!startTime || !endTime) {
+            alert('Укажите время начала и конца.');
+            return;
+        }
+
+        const startDate = new Date(startTime);
+        const endDate = new Date(endTime);
+
+        if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+            alert('Неверный формат даты/времени.');
+            return;
+        }
+
+        if (endDate < startDate) {
+            alert('Время окончания не может быть раньше начала.');
+            return;
+        }
+
+        const eventData = { summary, description, startTime, endTime, status };
 
         try {
             await createEvent(eventData);
             form.reset();
-            await loadAndRender();
+            await loadAndRender(startDate);
         } catch (err) {
             alert(err.message);
         }

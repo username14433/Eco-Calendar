@@ -39,9 +39,7 @@ public class CommonController {
         EventDto eventDto = eventService.findAllEvents();
         model.addAttribute("upcomingEventsQuantity", eventDto.getUpcomingEventsQuantity());
         model.addAttribute("finishedEventsQuantity", eventDto.getFinishedEventsQuantity());
-
-
-        return "main-page";
+        return "main-page"; // линейный список для всех
     }
 
     @PostMapping("/add")
@@ -50,63 +48,81 @@ public class CommonController {
             @RequestParam String description,
             @RequestParam String startDateTime,
             @RequestParam String endDateTime,
-            @CookieValue(value = "isAdmin", defaultValue = "none") String isAdminCookie
+            @CookieValue(value = "isAdmin", defaultValue = "false") String isAdminCookie,
+            RedirectAttributes redirectAttributes
     ) {
+        // добавлять события может только админ
+        if (!"true".equals(isAdminCookie)) {
+            redirectAttributes.addFlashAttribute("error", "Добавление событий доступно только администратору");
+            return "redirect:/calendar";
+        }
+
         String formattedStartDateTime = eventService.formatDateTime(startDateTime);
         String formattedEndDateTime = eventService.formatDateTime(endDateTime);
         eventService.addEvent(summary, description, formattedStartDateTime, formattedEndDateTime, EventStatus.AWAITING);
 
-        if (isAdminCookie.equals("true")) {
-            return "redirect:/admin-panel";
-        }
-
-        return "redirect:/calendar";
+        return "redirect:/admin-panel";
     }
 
     @GetMapping("/login-to-admin")
-    public String loginToAdminPanel(@CookieValue(value = "isAdmin", defaultValue = "none")  String isAdminCookie) {
-        if (isAdminCookie.equals("true")) {
+    public String loginToAdminPanel(
+            @CookieValue(value = "isAdmin", defaultValue = "false") String isAdminCookie
+    ) {
+        if ("true".equals(isAdminCookie)) {
             return "redirect:/admin-panel";
         }
         return "login-to-admin";
     }
 
-
-    //TODO: Сделать так, чтобы если пользователь вошёл в аккаунт админа, ему была доступна функция удаления событий
-    //TODO: Сделать так, чтобы пользователь мог ввести свой логин (почту) и ему приходили оповещения о ближайших событиях
-
-
-
     @PostMapping("/admin-panel")
     public String adminPanel(@RequestParam(name = "loginId") String adminId,
                              RedirectAttributes redirectAttributes,
                              HttpServletResponse servletResponse) {
-        if (!adminId.equals("admin")) {
+        if (!"admin".equals(adminId)) {
             redirectAttributes.addFlashAttribute("error", "Администратор с таким идентификатором не найден!");
             return "redirect:/login-to-admin";
         }
+
         Cookie isAdminCookie = new Cookie("isAdmin", "true");
         isAdminCookie.setPath("/");
         isAdminCookie.setMaxAge(3600);
         servletResponse.addCookie(isAdminCookie);
+
         return "admin-panel";
     }
 
-    @GetMapping("admin-panel")
-    public String getAdminPanel() {
+    @GetMapping("/admin-panel")
+    public String getAdminPanel(
+            @CookieValue(value = "isAdmin", defaultValue = "false") String isAdminCookie
+    ) {
+        if (!"true".equals(isAdminCookie)) {
+            return "redirect:/login-to-admin";
+        }
         return "admin-panel";
     }
 
     @PostMapping("/delete-event")
-    public String deleteEvent(@RequestParam("id") int eventId) {
-        eventService.deleteEvent(eventId);
+    public String deleteEvent(@RequestParam("id") int eventId,
+                              @CookieValue(value = "isAdmin", defaultValue = "false") String isAdminCookie,
+                              RedirectAttributes redirectAttributes) {
+        // удалять события может только админ
+        if (!"true".equals(isAdminCookie)) {
+            redirectAttributes.addFlashAttribute("error", "Удаление событий доступно только администратору");
+            return "redirect:/calendar";
+        }
 
+        eventService.deleteEvent(eventId);
         return "redirect:/admin-panel";
     }
 
     @GetMapping("/eco-front")
-    public String getEcoFront() {
-        return "eco-front"; // имя шаблона eco-front.html
+    public String getEcoFront(
+            @CookieValue(value = "isAdmin", defaultValue = "false") String isAdminCookie,
+            Model model
+    ) {
+        boolean isAdmin = "true".equals(isAdminCookie);
+        model.addAttribute("isAdmin", isAdmin);
+        // теперь страница доступна всем, просто режим разный
+        return "eco-front";
     }
-
 }

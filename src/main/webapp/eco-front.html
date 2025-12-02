@@ -1,35 +1,66 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Eco Calendar – SPA</title>
+    <title>Eco Calendar – Календарь</title>
     <link rel="stylesheet" href="/resources/css/main-page.css">
 </head>
 <body>
 <div class="container">
-    <h1>Eco Calendar 🌿 (SPA на JS)</h1>
+    <h1>Eco Calendar 🌿</h1>
 
-    <section class="events-section">
-        <h2>Предстоящие события</h2>
-        <h3>Предстоящих событий: <span id="upcoming-count">0</span></h3>
-        <h3>Завершённых событий: <span id="finished-count">0</span></h3>
-
-        <table>
-            <thead>
-            <tr>
-                <th>Название</th>
-                <th>Описание</th>
-                <th>Начало</th>
-                <th>Конец</th>
-                <th>Действия</th>
-            </tr>
-            </thead>
-            <tbody id="events-table-body">
-            <!-- сюда JS будет подставлять строки -->
-            </tbody>
-        </table>
+    <!-- Статистика -->
+    <section class="stats-section">
+        <div class="stat-card">
+            <span class="stat-label">Предстоящих событий</span>
+            <span class="stat-value" id="upcoming-count">0</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-label">Завершённых событий</span>
+            <span class="stat-value" id="finished-count">0</span>
+        </div>
     </section>
 
+    <!-- Календарь -->
+    <section class="calendar-section">
+        <div class="calendar-header">
+            <button class="calendar-nav-btn" id="prev-month">‹</button>
+            <div class="calendar-title" id="calendar-month-year">Месяц Год</div>
+            <button class="calendar-nav-btn" id="next-month">›</button>
+        </div>
+
+        <div class="calendar-weekdays">
+            <div class="calendar-weekday">Пн</div>
+            <div class="calendar-weekday">Вт</div>
+            <div class="calendar-weekday">Ср</div>
+            <div class="calendar-weekday">Чт</div>
+            <div class="calendar-weekday">Пт</div>
+            <div class="calendar-weekday">Сб</div>
+            <div class="calendar-weekday">Вс</div>
+        </div>
+
+        <div class="calendar-days" id="calendar-days">
+            <!-- сюда JS вставляет дни -->
+        </div>
+    </section>
+
+    <!-- Детали выбранного дня -->
+    <section class="day-details-section">
+        <h2 id="day-details-title">Выберите день</h2>
+        <div id="day-details-content" class="day-details-empty">
+            Пока ничего не выбрано
+        </div>
+    </section>
+
+    <!-- Ближайшие события -->
+    <section class="upcoming-section">
+        <h2>Ближайшие события</h2>
+        <ul id="upcoming-list" class="upcoming-list">
+            <!-- JS заполнит -->
+        </ul>
+    </section>
+
+    <!-- Форма добавления события -->
     <section class="form-section">
         <h2>Добавить событие</h2>
         <form id="add-event-form">
@@ -42,17 +73,17 @@
                 <textarea name="description" required></textarea>
             </label>
             <label>
-                Начало (YYYY-MM-DDTHH:MM):
-                <input type="text" name="startTime" placeholder="2025-11-30T10:00">
+                Начало:
+                <input type="datetime-local" name="startTime" required>
             </label>
             <label>
-                Конец (YYYY-MM-DDTHH:MM):
-                <input type="text" name="endTime" placeholder="2025-11-30T12:00">
+                Конец:
+                <input type="datetime-local" name="endTime" required>
             </label>
             <label>
                 Статус:
                 <select name="status">
-                    <option value="UPCOMING">Предстоящее</option>
+                    <option value="AWAITING">Предстоящее</option>
                     <option value="FINISHED">Завершённое</option>
                 </select>
             </label>
