@@ -1,15 +1,12 @@
-/* Фон всей страницы чуть мягче */
 body {
     background: #f3f4f6;
 }
 
-/* Общий контейнер по центру */
 .container {
     max-width: 1200px;
     margin: 0 auto;
 }
 
-/* Верхняя строка: заголовок + кнопка "назад" */
 .top-bar {
     display: flex;
     align-items: center;
@@ -27,7 +24,6 @@ body {
     text-decoration: underline;
 }
 
-/* Белая карточка вокруг календаря */
 .calendar-wrapper {
     background: #ffffff;
     border-radius: 16px;
@@ -36,7 +32,6 @@ body {
     margin-bottom: 32px;
 }
 
-/* Статистика сверху */
 .stats-section {
     display: flex;
     gap: 16px;
@@ -65,14 +60,12 @@ body {
     font-weight: 600;
 }
 
-/* Макет: слева календарь, справа сайдбар */
 .calendar-layout {
     display: grid;
     grid-template-columns: 2fr 1.1fr;
     gap: 24px;
 }
 
-/* На узких экранах всё в одну колонку */
 @media (max-width: 900px) {
     .calendar-layout {
         grid-template-columns: 1fr;
@@ -85,7 +78,6 @@ body {
     gap: 16px;
 }
 
-/* Календарь */
 
 .calendar-section {
     margin-bottom: 24px;
@@ -138,24 +130,26 @@ body {
 
 .calendar-days {
     display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 4px;
+        grid-template-columns: repeat(7, minmax(0, 1fr));
+        gap: 4px;
+        grid-auto-rows: 110px;
 }
 
 .calendar-day {
-    min-height: 90px;
-    background: #fafbff;
-    border-radius: 10px;
-    padding: 4px;
-    box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    border: 1px solid #edf0f7;
-    cursor: pointer;
-    transition: background 0.15s ease, transform 0.1s ease,
-                box-shadow 0.15s ease, border-color 0.15s ease;
-}
+        width: 100%;
+        height: 110px;
+        background: #fafbff;
+        border-radius: 10px;
+        padding: 4px;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        border: 1px solid #edf0f7;
+        cursor: pointer;
+        transition: background 0.15s ease, transform 0.1s ease,
+                    box-shadow 0.15s ease, border-color 0.15s ease;
+    }
 
 .calendar-day:hover {
     background: #f1f5f9;
@@ -168,13 +162,16 @@ body {
     cursor: default;
 }
 
-/* Клетка с событиями */
-.calendar-day--has-events {
+.calendar-day--upcoming {
     border-color: #2f855a;
     box-shadow: 0 0 0 1px rgba(47, 133, 90, 0.15);
 }
 
-/* Сегодняшний день */
+.calendar-day--finished {
+    border-color: #cbd5e1;
+    background: #f8fafc;
+}
+
 .calendar-day--today {
     border-color: #3182ce;
     box-shadow: 0 0 0 1px rgba(49, 130, 206, 0.4);
@@ -187,10 +184,18 @@ body {
 }
 
 .calendar-events {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    margin-top: 2px;
+    border-radius: 8px;
+        padding: 2px 4px;
+        font-size: 11px;
+        line-height: 1.3;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+}
+
+.calendar-event-more {
+    font-size: 10px;
+    color: #6b7280;
 }
 
 .calendar-event {
@@ -204,7 +209,16 @@ body {
     text-overflow: ellipsis;
 }
 
-/* Детали дня */
+.calendar-event--upcoming {
+    background: #e3f4e9;
+}
+
+.calendar-event--finished {
+    background: #e5e7eb;
+    color: #4b5563;
+    text-decoration: line-through;
+}
+
 
 .day-details-section {
     margin-bottom: 8px;
@@ -264,7 +278,6 @@ body {
     font-size: 12px;
 }
 
-/* Список ближайших */
 
 .upcoming-section {
     margin-bottom: 8px;
@@ -280,7 +293,6 @@ body {
     margin-bottom: 4px;
 }
 
-/* Форма справа чуть компактнее */
 
 .form-section form label {
     display: block;

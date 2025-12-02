@@ -1,7 +1,7 @@
 const API_BASE = '/api/events';
 
 let currentYear;
-let currentMonth; // 0-11
+let currentMonth;
 
 const monthNames = [
     'Январь', 'Февраль', 'Март', 'Апрель',
@@ -9,14 +9,13 @@ const monthNames = [
     'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'
 ];
 
-// ================== API ==================
 
 async function fetchEvents() {
     const response = await fetch(API_BASE);
     if (!response.ok) {
         throw new Error('Не удалось загрузить события');
     }
-    return response.json(); // { events, upcomingEventsQuantity, finishedEventsQuantity }
+    return response.json();
 }
 
 async function createEvent(eventData) {
@@ -45,7 +44,6 @@ async function deleteEvent(id) {
     }
 }
 
-// ================== ДАТЫ/ГРУППИРОВКА ==================
 
 function parseDateOnly(dateTimeStr) {
     if (!dateTimeStr) return null;
@@ -80,7 +78,6 @@ function groupEventsByDay(events) {
     return map;
 }
 
-// ================== РЕНДЕР КАЛЕНДАРЯ ==================
 
 function renderCalendar(events, onDayClick) {
     const monthYearLabel = document.getElementById('calendar-month-year');
@@ -112,7 +109,9 @@ function renderCalendar(events, onDayClick) {
     for (let day = 1; day <= daysInMonth; day++) {
         const date = new Date(currentYear, currentMonth, day);
         const dateKey = date.toISOString().substring(0, 10);
-        const dayEvents = (eventsByDay[dateKey] || []).filter(e => {
+
+        const dayEventsAll = eventsByDay[dateKey] || [];
+        const dayEvents = dayEventsAll.filter(e => {
             const d = parseDateOnly(e.startTime);
             return d && d.getMonth() === currentMonth && d.getFullYear() === currentYear;
         });
@@ -123,8 +122,14 @@ function renderCalendar(events, onDayClick) {
         if (currentYear === todayY && currentMonth === todayM && day === todayD) {
             cell.classList.add('calendar-day--today');
         }
-        if (dayEvents.length > 0) {
-            cell.classList.add('calendar-day--has-events');
+
+        const upcomingEvents = dayEvents.filter(e => e.status === 'AWAITING');
+        const finishedEvents = dayEvents.filter(e => e.status === 'FINISHED');
+
+        if (upcomingEvents.length > 0) {
+            cell.classList.add('calendar-day--upcoming');
+        } else if (finishedEvents.length > 0) {
+            cell.classList.add('calendar-day--finished');
         }
 
         const dayNumber = document.createElement('div');
@@ -135,13 +140,32 @@ function renderCalendar(events, onDayClick) {
         const eventsContainer = document.createElement('div');
         eventsContainer.classList.add('calendar-events');
 
-        dayEvents.forEach(event => {
+        const eventsToShow = dayEvents.slice(0, 3);
+
+        eventsToShow.forEach(event => {
             const eventEl = document.createElement('div');
             eventEl.classList.add('calendar-event');
+
+            if (event.status === 'FINISHED') {
+                eventEl.classList.add('calendar-event--finished');
+            } else {
+                eventEl.classList.add('calendar-event--upcoming');
+            }
+
             const timeText = formatTime(event.startTime);
-            eventEl.textContent = timeText ? `${timeText} · ${event.summary}` : event.summary;
+            eventEl.textContent = timeText
+                ? `${timeText} · ${event.summary}`
+                : event.summary;
+
             eventsContainer.appendChild(eventEl);
         });
+
+        if (dayEvents.length > 3) {
+            const moreEl = document.createElement('div');
+            moreEl.classList.add('calendar-event-more');
+            moreEl.textContent = `+${dayEvents.length - 3} ещё`;
+            eventsContainer.appendChild(moreEl);
+        }
 
         cell.appendChild(eventsContainer);
 
@@ -153,7 +177,6 @@ function renderCalendar(events, onDayClick) {
     }
 }
 
-// ================== ДЕТАЛИ ДНЯ И БЛИЖАЙШИЕ ==================
 
 function renderDayDetails(date, eventsForDay) {
     const titleEl = document.getElementById('day-details-title');
@@ -206,7 +229,6 @@ function renderDayDetails(date, eventsForDay) {
         item.appendChild(header);
         item.appendChild(desc);
 
-        // КНОПКА УДАЛЕНИЯ — ТОЛЬКО ДЛЯ АДМИНА
         if (window.IS_ADMIN) {
             const deleteBtn = document.createElement('button');
             deleteBtn.textContent = 'Удалить';
@@ -254,7 +276,6 @@ function renderUpcomingList(events) {
     });
 }
 
-// ================== СТАТИСТИКА, ФОРМА, НАВИГАЦИЯ ==================
 
 function renderStats(dto) {
     document.getElementById('upcoming-count').textContent = dto.upcomingEventsQuantity;
@@ -287,7 +308,6 @@ async function loadAndRender(selectedDateForDetails = null) {
 }
 
 function setupForm() {
-    // если не админ — форму вообще не настраиваем
     if (!window.IS_ADMIN) {
         return;
     }

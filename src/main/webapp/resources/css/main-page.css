@@ -1,6 +1,4 @@
-/* ===== БАЗОВЫЕ СТИЛИ САЙТА (общие для всех страниц, кроме специфичного календаря) ===== */
-
-* {
+ {
     box-sizing: border-box;
 }
 
@@ -11,14 +9,12 @@ body {
     color: #1f2933;
 }
 
-/* Центровка контента для обычных страниц */
 .container {
     max-width: 960px;
     margin: 0 auto;
     padding: 16px;
 }
 
-/* Заголовок страницы */
 
 .page-title,
 h1 {
@@ -28,15 +24,12 @@ h1 {
     color: #111827;
 }
 
-/* Подзаголовки */
-
 h2 {
     font-size: 20px;
     margin: 16px 0 8px;
     font-weight: 600;
 }
 
-/* Простой "карточный" блок (для панелей, форм и т.п.) */
 
 .card {
     background: #ffffff;
@@ -46,7 +39,6 @@ h2 {
     margin-bottom: 16px;
 }
 
-/* Горизонтальная панель сверху (напр. заголовок + кнопка) */
 
 .top-bar {
     display: flex;
@@ -55,7 +47,6 @@ h2 {
     margin-bottom: 16px;
 }
 
-/* Ссылки */
 
 a {
     color: #2563eb;
@@ -66,7 +57,6 @@ a:hover {
     text-decoration: underline;
 }
 
-/* ===== КНОПКИ ===== */
 
 button,
 .admin-btn,
@@ -102,7 +92,6 @@ button:disabled,
     transform: none;
 }
 
-/* Кнопка-псевдоссылка (например, "Назад") */
 
 .link-btn {
     background: transparent;
@@ -117,7 +106,6 @@ button:disabled,
     transform: none;
 }
 
-/* ===== ФОРМЫ (логин, добавление события и т.п.) ===== */
 
 form {
     margin-top: 8px;
@@ -153,14 +141,12 @@ select:focus {
     box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.3);
 }
 
-/* Текст внутри textarea чуть меньше */
 
 textarea {
     min-height: 80px;
     resize: vertical;
 }
 
-/* Ошибки / уведомления */
 
 .error-message {
     color: #b91c1c;
@@ -180,13 +166,11 @@ textarea {
     margin-bottom: 10px;
 }
 
-/* ===== СПИСОК СОБЫТИЙ (линейный, для /calendar и /admin-panel) ===== */
 
 .events-section {
     margin-top: 16px;
 }
 
-/* Если список реализован как таблица */
 
 table.events-table {
     width: 100%;
@@ -223,7 +207,6 @@ table.events-table tbody tr:hover {
     background: #f9fafb;
 }
 
-/* Если список реализован блоками, а не таблицей */
 
 .events-list {
     list-style: none;
@@ -261,7 +244,6 @@ table.events-table tbody tr:hover {
     margin-top: 4px;
 }
 
-/* Кнопка удаления в списке событий (на админ-панели) */
 
 .delete-btn {
     background: #dc2626;
@@ -271,7 +253,6 @@ table.events-table tbody tr:hover {
     background: #b91c1c;
 }
 
-/* ===== ПРОСТАЯ СТАТИСТИКА НА ГЛАВНОЙ (если есть) ===== */
 
 .stats {
     display: flex;
@@ -299,7 +280,6 @@ table.events-table tbody tr:hover {
     font-size: 16px;
 }
 
-/* ===== ЛОГИН АДМИНА (/login-to-admin) ===== */
 
 .login-wrapper {
     max-width: 400px;

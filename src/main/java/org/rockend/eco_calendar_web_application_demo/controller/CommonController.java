@@ -51,7 +51,6 @@ public class CommonController {
             @CookieValue(value = "isAdmin", defaultValue = "false") String isAdminCookie,
             RedirectAttributes redirectAttributes
     ) {
-        // добавлять события может только админ
         if (!"true".equals(isAdminCookie)) {
             redirectAttributes.addFlashAttribute("error", "Добавление событий доступно только администратору");
             return "redirect:/calendar";
