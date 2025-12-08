@@ -1,32 +1,41 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="ru">
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="utf-8">
-    <title>Eco Calendar</title>
+    <meta charset="UTF-8">
+    <title>Вход для администратора</title>
     <link rel="stylesheet" href="/resources/css/main-page.css">
 </head>
 <body>
-<meta charset="utf-8">
-<div class="container">
-    <h1>Eco Calendar 🌿</h1>
-    <section class="form-section">
-        <h2>Войти как Админ</h2>
-        <form action="/admin-panel" method="POST">
-            <label>Введите идентификатор админа:
-                <input name="loginId" required>
-            </label>
-            <button type="submit">Войти</button>
-        </form>
+<div class="container login-wrapper">
+    <h1 class="login-title">Вход администратора</h1>
+    <p class="login-subtitle">Введите почту и пароль администратора</p>
 
-        <p th:if="${error != null}" th:text="${error}" class="error-msg"></p>
-
-        <div class="bottom-button">
-            <form action="/calendar" method="GET">
-                <button type="submit" class="admin-btn">← Вернуться к календарю</button>
-            </form>
+    <!-- Сообщение об ошибке от Spring Security -->
+    <div th:if="${param.error}">
+        <div class="error-message">
+            Неверная почта или пароль
         </div>
+    </div>
 
-    </section>
+    <form th:action="@{/login-to-admin}" method="post">
+        <label>
+            Почта
+            <input type="email" name="email" required
+                   pattern="^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$"
+                   title="Введите корректный E-mail в формате example@mail.com">
+        </label>
+
+        <label>
+            Пароль
+            <input type="password" name="password" required>
+        </label>
+
+        <button type="submit" class="btn">Войти</button>
+    </form>
+
+    <p style="margin-top: 8px; font-size: 13px; color: #6b7280;">
+        Тестовые данные: admin@eco-calendar.ru / admin123
+    </p>
 </div>
 </body>
 </html>
